@@ -77,6 +77,8 @@ def main():
         i = 0
         set_sum_cols = set()
         prev_len_sum_cols = 0
+        all_moon_coordinates = all_moon_coordinates_initial[:]
+        all_moon_velocities = all_moon_velocities_initial[:]
         while True:
             all_moon_coordinates_tup = tuple([a[j] for a in all_moon_coordinates],)
             all_moon_velocities_tup = tuple([a[j] for a in all_moon_velocities],)
