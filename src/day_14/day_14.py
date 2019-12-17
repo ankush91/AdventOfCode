@@ -67,6 +67,8 @@ def recurse_required_quantities(input_to_output_compounds, input_chemical):
 
     return sum_inputs
 
+# def recurse_new_quantities(input_to_output_compound, input_chemical):
+
 
 def main():
     input_to_output_compounds = read_input()
@@ -78,4 +80,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
