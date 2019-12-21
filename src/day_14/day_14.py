@@ -37,10 +37,9 @@ def read_input():
     return input_to_output_compounds
 
 
-def recurse_required_quantities(input_to_output_compounds, input_chemical):
+def recurse_required_quantities(input_to_output_compounds, input_chemical, fuel_required=1):
     # base-case minimum fuel produced
     if input_chemical == 'FUEL':
-        print('fuel',input_to_output_compounds[input_chemical][0])
         return input_to_output_compounds[input_chemical][0]
 
     sum_inputs = 0
@@ -53,11 +52,15 @@ def recurse_required_quantities(input_to_output_compounds, input_chemical):
         # multiply by quantity of input used to produce output
         total_required_output = math.ceil(
                                     recurse_required_quantities(
-                                        input_to_output_compounds, output_compound
+                                        input_to_output_compounds, output_compound, fuel_required
                                     ) / min_output_quantity
                                 )
 
-        sum_input_due_to_output  = (input_quantity * total_required_output)
+        # if required fuel quantity is more than base, then change input quantity needed
+        if output_compound == 'FUEL' and fuel_required > 1:
+            input_quantity *= fuel_required
+
+        sum_input_due_to_output  = int(input_quantity * total_required_output)
 
         sum_inputs += sum_input_due_to_output
         # DEBUG STATEMENTS FOR RECURSIVE FLOW
@@ -71,30 +74,36 @@ def recurse_required_quantities(input_to_output_compounds, input_chemical):
 
 def binary_search_fuel_required(low, high, target_ore_supply, input_to_output_compounds):
     # fuel required
-    mid = (low + high) / 2
-    print(mid)
+    mid = math.ceil((low + high) / 2)
 
     # redefine minimum required fuel quantity
     input_to_output_compounds['FUEL'][0] = mid
-    required_ore = recurse_required_quantities(input_to_output_compounds, 'ORE')
 
-    print(mid, required_ore, target_ore_supply)
+    required_ore = recurse_required_quantities(input_to_output_compounds, 'ORE', mid)
+    print('fuel generated',  mid)
+    print(low, mid, high)
+    print('ore required', required_ore)
+    print('target ore', target_ore_supply)
+    print()
 
+    # no more fuel can be generated using target ore supply
+    if low > high:
+        return mid
     # fuel generated using desired supply of ore 
-    if required_ore == target_ore_supply:
-        return required_ore
+    elif required_ore == target_ore_supply:
+        return mid
     # lesser ore required than supplied; more fuel can be generated
     elif required_ore < target_ore_supply:
-        binary_search_fuel_required(mid + 1, high, target_ore_supply, input_to_output_compounds)
+        return binary_search_fuel_required(mid + 1, high, target_ore_supply, dict(input_to_output_compounds))
     # more ore required than target supply; lesser fuel can be generated
     elif required_ore > target_ore_supply:
-        binary_search_fuel_required(low, mid - 1, target_ore_supply, input_to_output_compounds)
+        return binary_search_fuel_required(low, mid - 1, target_ore_supply, dict(input_to_output_compounds))
 
 
 def main():
     input_to_output_compounds = read_input()
     ore_for_1_fuel = recurse_required_quantities(input_to_output_compounds, 'ORE')
-    print('part-1', )
+    print('part-1', ore_for_1_fuel)
 
     ## PART-2
     total_ores_supply = 1000000000000
@@ -102,13 +111,15 @@ def main():
     # low indicates all the ore generated is consumed for 1 fuel
     low_initial = ore_for_1_fuel
 
+    # **NEED TO FIX EDGE CASES**
+    
     # high indicates the ore generated is exponentially more than consumed for 1 fuel
     # i.e. 1 unit of ore translates to 1 unit of fuel
     high_initial = total_ores_supply
 
     print(binary_search_fuel_required(low_initial, high_initial, 
                                       total_ores_supply,
-                                      input_to_output_compounds))
+                                      dict(input_to_output_compounds)))
 
 
 if __name__ == "__main__":
