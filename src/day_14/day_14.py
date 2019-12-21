@@ -40,6 +40,7 @@ def read_input():
 def recurse_required_quantities(input_to_output_compounds, input_chemical):
     # base-case minimum fuel produced
     if input_chemical == 'FUEL':
+        print('fuel',input_to_output_compounds[input_chemical][0])
         return input_to_output_compounds[input_chemical][0]
 
     sum_inputs = 0
@@ -67,15 +68,47 @@ def recurse_required_quantities(input_to_output_compounds, input_chemical):
 
     return sum_inputs
 
-# def recurse_new_quantities(input_to_output_compound, input_chemical):
+
+def binary_search_fuel_required(low, high, target_ore_supply, input_to_output_compounds):
+    # fuel required
+    mid = (low + high) / 2
+    print(mid)
+
+    # redefine minimum required fuel quantity
+    input_to_output_compounds['FUEL'][0] = mid
+    required_ore = recurse_required_quantities(input_to_output_compounds, 'ORE')
+
+    print(mid, required_ore, target_ore_supply)
+
+    # fuel generated using desired supply of ore 
+    if required_ore == target_ore_supply:
+        return required_ore
+    # lesser ore required than supplied; more fuel can be generated
+    elif required_ore < target_ore_supply:
+        binary_search_fuel_required(mid + 1, high, target_ore_supply, input_to_output_compounds)
+    # more ore required than target supply; lesser fuel can be generated
+    elif required_ore > target_ore_supply:
+        binary_search_fuel_required(low, mid - 1, target_ore_supply, input_to_output_compounds)
 
 
 def main():
     input_to_output_compounds = read_input()
-    print('part-1', recurse_required_quantities(input_to_output_compounds, 'ORE'))
+    ore_for_1_fuel = recurse_required_quantities(input_to_output_compounds, 'ORE')
+    print('part-1', )
 
     ## PART-2
     total_ores_supply = 1000000000000
+
+    # low indicates all the ore generated is consumed for 1 fuel
+    low_initial = ore_for_1_fuel
+
+    # high indicates the ore generated is exponentially more than consumed for 1 fuel
+    # i.e. 1 unit of ore translates to 1 unit of fuel
+    high_initial = total_ores_supply
+
+    print(binary_search_fuel_required(low_initial, high_initial, 
+                                      total_ores_supply,
+                                      input_to_output_compounds))
 
 
 if __name__ == "__main__":

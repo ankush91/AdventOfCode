@@ -1,6 +1,3 @@
-import numpy as np
-
-
 def read_input():
     with open('input', 'r') as file:
         input_str = file.read().strip('\n')
@@ -9,39 +6,59 @@ def read_input():
     return list_digits
 
 
-def main():
-    list_digits = read_input()
-    # vectorize input
-    X_input = np.array([list_digits])
-
-    # pattern matrix
-    x_pattern, pattern_list = [0, 1, 0, -1], []
-    for i in range(1, len(list_digits) + 1):
-        row = []
-        j = 0
-        while len(row) < (len(list_digits) + 1):
-            row.extend([x_pattern[j]] * i)
-            # phase 
-            if len(row) >= (len(list_digits) + 1):
-                row = row[:len(list_digits) + 1]
-            j += 1
-            j = j % len(x_pattern)
-        pattern_list.append(row)
-
-    # drop 1st pattern unit for phase transformations
-    X_pattern = np.array(pattern_list)[:,1:]
-    
+def part_1(x_input, x_pattern, num_phases=1):
     # for each phase, take remainder after absolute value
     p = 0
     ## PART-1 soln
-    while p < 100:
-        X_output = np.absolute(X_input.dot(X_pattern.T)) % 10
-        # DEBUG
-        # print(X_output)
-        X_input = X_output
-        p += 1
+    while p < num_phases:
+        output_list = []
+        # row-wise
+        for i in range(len(x_input)):
+            total_row_sum, ff_idx = 0, 0
+            # start from -1 to allow left shifted sequence
+            # mutliply pattern idx to num. rows i/p values
+            
+            for j in range(-1, len(x_input), i + 1):
+                ff_idx = ff_idx % len(x_pattern)
+                ff_multiplier = x_pattern[ff_idx]
+                ff_idx += 1
 
-    print(X_output)
+                # slice and multiply pattern value till i + 1 values
+                total_row_sum += sum([ff_multiplier * xi for xi in x_input[j: j + i + 1]])
+            output_list.append(abs(total_row_sum) % 10)
+
+        p += 1
+        print(p)
+        x_input = output_list
+
+    return output_list
+
+
+def part_2():
+    pass
+
+
+def main():
+    list_digits = read_input()
+    # pattern list
+    x_pattern = [0, 1, 0, -1]
+    
+    ## PART-1
+    output_list = part_1(list_digits, x_pattern, num_phases=100)
+    print('part-1', output_list)
+
+    ## PART-2 ANALYSIS
+    print(len(list_digits))
+    print(len(list_digits) * 10000)
+    print((len(list_digits) * 10000) / 2)
+
+    print(part_1(list_digits[:] * 10000, x_pattern, num_phases=100))
+
+    # retrieve index for 1st 7 digits
+    # output_indx = int(''.join([str(xi) for xi in x_input[:7]]))
+    # print(x_input[:7])
+    # print(output_indx)
+    # print(x_input[output_indx:(output_indx + 8)])
 
 
 if __name__ == "__main__":
