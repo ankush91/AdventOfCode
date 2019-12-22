@@ -80,24 +80,21 @@ def binary_search_fuel_required(low, high, target_ore_supply, input_to_output_co
     input_to_output_compounds['FUEL'][0] = mid
 
     required_ore = recurse_required_quantities(input_to_output_compounds, 'ORE', mid)
-    print('fuel generated',  mid)
-    print(low, mid, high)
-    print('ore required', required_ore)
-    print('target ore', target_ore_supply)
-    print()
+    ## DEBUG STATEMENTS
+    # print('fuel generated',  mid)
+    # print('ore required', required_ore)
+    # print('target ore', target_ore_supply)
+    # print()
 
     # no more fuel can be generated using target ore supply
-    if low > high:
+    if (mid + 1) >= high and required_ore <= target_ore_supply:
         return mid
-    # fuel generated using desired supply of ore 
-    elif required_ore == target_ore_supply:
-        return mid
-    # lesser ore required than supplied; more fuel can be generated
-    elif required_ore < target_ore_supply:
-        return binary_search_fuel_required(mid + 1, high, target_ore_supply, dict(input_to_output_compounds))
     # more ore required than target supply; lesser fuel can be generated
     elif required_ore > target_ore_supply:
-        return binary_search_fuel_required(low, mid - 1, target_ore_supply, dict(input_to_output_compounds))
+        return binary_search_fuel_required(low, mid - 1, target_ore_supply, input_to_output_compounds)
+    # lesser ore required than supplied; more fuel can be generated
+    elif required_ore < target_ore_supply:
+        return binary_search_fuel_required(mid + 1, high, target_ore_supply, input_to_output_compounds)
 
 
 def main():
@@ -108,13 +105,11 @@ def main():
     ## PART-2
     total_ores_supply = 1000000000000
 
-    # low indicates all the ore generated is consumed for 1 fuel
-    low_initial = ore_for_1_fuel
-
-    # **NEED TO FIX EDGE CASES**
+    # low indicates 1 fuel is generated using target ore supply
+    low_initial = 1
     
-    # high indicates the ore generated is exponentially more than consumed for 1 fuel
-    # i.e. 1 unit of ore translates to 1 unit of fuel
+    # high indicates x units of fuel is generated for x units of ore
+    # i.e. 1 unit of ore translates to 1 unit of fuel (only whole number units)
     high_initial = total_ores_supply
 
     print(binary_search_fuel_required(low_initial, high_initial, 
